@@ -46,7 +46,23 @@
 *.mod*
 *.cmd
 .tmp_versions/
+DebugConfig/
+Listings/
+Objects/
+obj/
 modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# other ignore files
+JLinkLog*.*
+!*.uvprojx
+*.uvoptx
+*.uvoptx.*
+*.uvguix
+*.uvguix.*
+*.uvgui
+*.uvgui.*
+
+
