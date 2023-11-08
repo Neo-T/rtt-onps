@@ -14,7 +14,6 @@
 #include "netif/route.h"
 
 #ifdef ONPS_ENABLE_NETTOOLS_TELNETSRV
-#include "ch32v30x.h"
 #include "net_tools/net_virtual_terminal.h"
 #ifdef ONPS_ENABLE_NVTCMD_TELNET
 #include "net_tools/telnet_client.h"
@@ -59,10 +58,6 @@ static const ST_NVTCMD l_staNvtCmd[] = {
 static ST_NVTCMD_NODE l_staNvtCmdNode[sizeof(l_staNvtCmd) / sizeof(ST_NVTCMD)];
 //* ===================================================================================
 
-#define NVTCMD_ONLY_ONE_INSTANCE "An instance of this command is already running, only one instance can run at a time. Please try again later.\r\n"
-
-#define THNVTCMD_STK_SIZE 1360
-static rt_thread_t l_tid_cmd = NULL;
 void nvt_cmd_register(void)
 {
   UCHAR i;
@@ -78,52 +73,17 @@ void nvt_cmd_register(void)
 //* 用的线程/任务资源
 void nvt_cmd_kill(void)
 {
-  if(l_tid_cmd)
-  {
-    rt_thread_delete(l_tid_cmd);
-    l_tid_cmd = NULL;
-  }
+
 }
 
 //* 以任务方式运行地命令在任务结束时应显式地告知其已结束运行，因为协议栈运行的目标系统属于资源受限系统，凡是以任务运行的nvt命令在
 //* 同一时刻只允许运行一个实例，这个函数确保nvt能够安全运行下一个任务实例
 void nvt_cmd_thread_end(void)
 {
-  l_tid_cmd = NULL;
+
 }
 
-static void nvt_cmd_thread_start(ULONGLONG ullNvtHandle, void (*pfunThreadEntry)(void *), void *pvParam, CHAR *pbIsCpyEnd, const CHAR *pszThreadName)
-{
-  os_critical_init();
 
-  os_enter_critical();
-  if(NULL == l_tid_cmd)
-  {
-    l_tid_cmd = rt_thread_create(pszThreadName, pfunThreadEntry, pvParam, THNVTCMD_STK_SIZE, THNVTCMD_PRIO, 5);
-    os_exit_critical();
-
-    if(l_tid_cmd != RT_NULL)
-    {
-      if(RT_EOK == rt_thread_startup(l_tid_cmd))
-      {
-        while (!(*pbIsCpyEnd))
-          os_sleep_ms(10);
-
-        return;
-      }
-    }
-
-    nvt_output(ullNvtHandle, "Failed to start command in thread mode.\r\n", sizeof("Failed to start command in thread mode.\r\n") - 1);
-    nvt_cmd_exec_end(ullNvtHandle);
-  }
-  else
-  {
-    os_exit_critical();
-
-    nvt_output(ullNvtHandle, NVTCMD_ONLY_ONE_INSTANCE, sizeof(NVTCMD_ONLY_ONE_INSTANCE) - 1);
-    nvt_cmd_exec_end(ullNvtHandle);
-  }
-}
 
 #ifdef ONPS_ENABLE_NVTCMD_TELNET
 #define NVTHELP_TELNET_USAGE       "Please enter the telnet server address, usage as follows:\r\n \033[01;37mtelnet xxx.xxx.xxx.xxx [port]\033[0m\r\n"
@@ -154,8 +114,12 @@ static INT telnet(CHAR argc, CHAR* argv[], ULONGLONG ullNvtHandle)
   else
     stArgs.stSrvAddr.usPort = 23;
 
-  nvt_cmd_thread_start(ullNvtHandle, telnet_clt_entry, &stArgs, &stArgs.bIsCpyEnd, "telnet_clt_entry");
+    /* 在这里添加线程/任务启动telnet客户端的代码
+      线程/任务入口函数为telnet_clt_entry()
+     */
 
+    while (!stArgs.bIsCpyEnd)
+        os_sleep_ms(10);
   return 0;
 }
 #endif //* #ifdef ONPS_ENABLE_NVTCMD_TELNET
@@ -167,7 +131,7 @@ static INT reset(CHAR argc, CHAR* argv[], ULONGLONG ullNvtHandle)
   os_sleep_secs(3);
   nvt_close(ullNvtHandle);
 
-  NVIC_SystemReset();
+  //* 在这里添加目标系统的复位指令
   return 0;
 }
 #endif //* #ifdef ONPS_ENABLE_NVTCMD_RESET
@@ -176,7 +140,7 @@ static INT reset(CHAR argc, CHAR* argv[], ULONGLONG ullNvtHandle)
 #ifdef ONPS_ENABLE_IPV6
 #define NVTHELP_PING_USAGE "Usage as follows:\r\n  \033[01;37mping [4] xxx.xxx.xxx.xxx\033[0m\r\n  \033[01;37mping 6 xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx\033[0m\r\n"
 #else //* #ifdef ONPS_ENABLE_IPV6
-#define NVTHELP_PING_USAGE "Usage as follows:\r\n  ping xxx.xxx.xxx.xxx\r\n"
+#define NVTHELP_PING_USAGE "Usage as follows:\r\n  \033[01;37mping xxx.xxx.xxx.xxx\033[0m\r\n"
 #endif //* #ifdef ONPS_ENABLE_IPV6
 static INT nvt_cmd_ping(CHAR argc, CHAR* argv[], ULONGLONG ullNvtHandle)
 {
@@ -230,9 +194,12 @@ static INT nvt_cmd_ping(CHAR argc, CHAR* argv[], ULONGLONG ullNvtHandle)
   stArgs.bIsCpyEnd = FALSE;
   stArgs.ullNvtHandle = ullNvtHandle;
 
+    /* 在这里添加线程/任务启动ping探测代码
+    线程/任务入口函数为nvt_cmd_ping_entry()
+    */
 
-  //* 启动ping任务
-  nvt_cmd_thread_start(ullNvtHandle, nvt_cmd_ping_entry, &stArgs, &stArgs.bIsCpyEnd, "nvt_cmd_ping_entry");
+    while (!stArgs.bIsCpyEnd)
+        os_sleep_ms(10);
 
   return 0;
 

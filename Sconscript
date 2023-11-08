@@ -1,7 +1,7 @@
 import os
 from building import *
 
-cwd     = GetCurrentDir()
+cwd = GetCurrentDir()
 
 #1. The basic files needed for ONPS
 onps_basicfiles_SRCS = Split("""
@@ -64,9 +64,9 @@ onps_port_SRCS = Split("""
 port/os_adapter.c
 """)
 
-onps_telnet_ch32_SRCS = Split("""
-port/telnet/ch32/nvt_cmd.c
-port/telnet/ch32/os_nvt.c
+onps_telnet_SRCS = Split("""
+port/telnet/nvt_cmd.c
+port/telnet/os_nvt.c
 """)
 
 #9. ipv6
@@ -76,14 +76,8 @@ ip/icmpv6.c
 ip/ipv6_configure.c
 """)
 
-#10. drivers
-onps_ch32_drivers_SRCS = Split("""
-drivers/ch32/eth_driver.c
-""")
-
-#12.samples
+#10.samples
 onps_samples_SRCS = Split("""
-samples/sample.c
 samples/tcp_commu/tcp_client.c
 """)
 
@@ -105,24 +99,19 @@ path = [cwd,
         cwd + '/include/mmu',
         cwd + '/include/net_tools',
         cwd + '/include/netif',
-        cwd + '/include/port',
-        cwd + '/include/telnet',
-        cwd + '/samples/tcp_commu'
+		cwd + '/port/include/port',
         ]
         
-if GetDepend(['ONPS_ENABLE_NETTOOLS_TELNETSRV']) and GetDepend(['ONPS_PLATFORM_CH32']):
-	src += onps_telnet_ch32_SRCS
-	path += [cwd + '/port/telnet/ch32']
+if GetDepend(['ONPS_ENABLE_NETTOOLS_TELNETSRV']):
+	src += onps_telnet_SRCS
+	path += [cwd + '/port/include/telnet]
 
 if GetDepend(['ONPS_ENABLE_SAMPLE']):
 	src += onps_samples_SRCS
+	path += [cwd + '/samples/tcp_commu']
 
 if GetDepend(['ONPS_ENABLE_IPV6']):
 	src += onps_ipv6_SRCS
-
-if GetDepend(['ONPS_PLATFORM_CH32']):
-	src += onps_ch32_drivers_SRCS
-	path += [cwd + '/drivers/ch32']
 
 group = DefineGroup('ONPS', src, depend = [''], CPPPATH = path)
 
