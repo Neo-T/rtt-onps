@@ -54,7 +54,7 @@ extern void rt_hw_interrupt_enable(register rt_base_t temp);
 #define os_enter_critical()   temp = rt_hw_interrupt_disable(); //* 进入临界区（关中断）
 #define os_exit_critical()    rt_hw_interrupt_enable(temp);     //* 退出临界区（开中断）
 
-#ifndef ONPS_ENABLE_BUDDY_MMU
+#ifndef PKG_ONPS_BUDDY_MMU_EN
     extern void *rt_malloc(rt_size_t size);
     extern void rt_free(void *rmem);
     #define buddy_free(pvStart)     rt_free(pvStart)
@@ -63,11 +63,11 @@ extern void rt_hw_interrupt_enable(register rt_base_t temp);
     #include "onps_errors.h"
     OS_ADAPTER_EXT void *buddy_alloc(UINT unSize, EN_ONPSERR *penErr);  //* 使用OS内核提供的内存
 #endif //* #ifdef __RT_THREAD_H__
-#endif //* #ifndef ONPS_ENABLE_BUDDY_MMU
+#endif //* #ifndef PKG_ONPS_BUDDY_MMU_EN
 
-#ifdef ONPS_ENABLE_PRINTF
+#ifdef PKG_ONPS_SUPPORT_PRINTF
   #define printf rt_kprintf
-#endif //* #ifdef ONPS_ENABLE_PRINTF
+#endif //* #ifdef PKG_ONPS_SUPPORT_PRINTF
 
 #endif
 

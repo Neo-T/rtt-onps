@@ -16,7 +16,7 @@ typedef struct rt_mutex *HMUTEX;            //* 线程同步锁句柄，同样�
 typedef struct rt_semaphore *HSEM;              //* 信号量，适用与不同线程间通讯
 #define INVALID_HSEM (struct rt_semaphore *)0   //* 无效的信号量句柄
 
-#ifdef ONPS_ENABLE_PPP
+#ifdef PKG_ONPS_SUPPORT_PPP
 typedef INT HTTY;               //* tty终端句柄
 #define INVALID_HTTY -1     //* 无效的tty终端句柄
 #endif

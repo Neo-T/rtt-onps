@@ -21,7 +21,7 @@
 static const UCHAR l_ubaLoopBackIpv6[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
 #endif
 
-static ST_NETIF_NODE l_staNetifNode[ONPS_NETIF_NUM];
+static ST_NETIF_NODE l_staNetifNode[ONPS_ETHERNET_NUM + ONPS_PPP_NETLINK_NUM];
 static PST_NETIF_NODE l_pstFreeNode = NULL;
 static PST_NETIF_NODE l_pstNetifLink = NULL;
 static HMUTEX l_hMtxNetif = INVALID_HMUTEX;
@@ -33,7 +33,7 @@ BOOL netif_init(EN_ONPSERR *penErr)
 
     //* 初始化
     INT i;
-    for (i = 1; i < ONPS_NETIF_NUM; i++)
+    for (i = 1; i < ONPS_ETHERNET_NUM + ONPS_PPP_NETLINK_NUM; i++)
         l_staNetifNode[i - 1].pstNext = &l_staNetifNode[i];
     l_pstFreeNode = &l_staNetifNode[0];
 

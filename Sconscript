@@ -99,12 +99,12 @@ path = [cwd,
         cwd + '/include/mmu',
         cwd + '/include/net_tools',
         cwd + '/include/netif',
-		cwd + '/port/include/port',
+		cwd + '/include/port',
         ]
         
 if GetDepend(['ONPS_ENABLE_NETTOOLS_TELNETSRV']):
 	src += onps_telnet_SRCS
-	path += [cwd + '/port/include/telnet]
+	path += [cwd + '/include/telnet]
 
 if GetDepend(['ONPS_ENABLE_SAMPLE']):
 	src += onps_samples_SRCS
